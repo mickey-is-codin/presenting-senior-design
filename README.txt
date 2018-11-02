@@ -7,4 +7,7 @@ Recommended rder to read the notebooks in:
 5) Signal Inflection Finding
 
 View with:
+https://nbviewer.jupyter.org/github/smit2300/PresentingSeniorDesign/blob/master/DataFetcher.ipynb
 https://nbviewer.jupyter.org/github/smit2300/PresentingSeniorDesign/blob/master/DataSubsetter.ipynb
+https://nbviewer.jupyter.org/github/smit2300/PresentingSeniorDesign/blob/master/SessionFetcher.ipynb
+https://nbviewer.jupyter.org/github/smit2300/PresentingSeniorDesign/blob/master/FirstLabBVPAnalysis.ipynb
