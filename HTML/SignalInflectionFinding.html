@@ -1,0 +1,314 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SignalInflectionFinding</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-02"><meta name="DC.source" content="SignalInflectionFinding.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Import CSVs Created from Python Script</a></li><li><a href="#3">Converting CSV's to Matlab Variables</a></li><li><a href="#4">Full time of session</a></li><li><a href="#5">Shortened time section of session</a></li><li><a href="#6">All first derivatives of signals</a></li><li><a href="#7">All second derivatives of signals</a></li><li><a href="#8">Begin Single Waveform Analysis</a></li><li><a href="#9">Get Peak/Trough Values and Locations</a></li><li><a href="#10">Plot Metrics</a></li><li><a href="#11">User Defined Tool Functions</a></li><li><a href="#12">Systole Peaks</a></li><li><a href="#13">Diastole Troughs</a></li><li><a href="#14">Dicrrotic Notches</a></li><li><a href="#15">Dataset Import Function</a></li></ul></div><pre class="codeinput">clc;
+clear;
+close <span class="string">all</span>;
+</pre><h2 id="2">Import CSVs Created from Python Script</h2><pre class="codeinput">[overall_data, small_data, der1_data, der2_data] = import_csvs();
+</pre><h2 id="3">Converting CSV's to Matlab Variables</h2><h2 id="4">Full time of session</h2><pre class="codeinput">still_full = overall_data(:,1);
+still_music_full = overall_data(:,2);
+hand_up_full = overall_data(:,3);
+hand_down_full = overall_data(:,4);
+walking_full = overall_data(:,5);
+running_full = overall_data(:,6);
+after_sprint_full = overall_data(:,7);
+tapping_fingers_full = overall_data(:,8);
+tapping_foot_full = overall_data(:,9);
+flexing_full = overall_data(:,10);
+</pre><h2 id="5">Shortened time section of session</h2><pre class="codeinput">still_small = small_data(:,1);
+still_music_small = small_data(:,2);
+hand_up_small = small_data(:,3);
+hand_down_small = small_data(:,4);
+walking_small = small_data(:,5);
+running_small = small_data(:,6);
+after_sprint_small = small_data(:,7);
+tapping_fingers_small = small_data(:,8);
+tapping_foot_small = small_data(:,9);
+flexing_small = small_data(:,10);
+</pre><h2 id="6">All first derivatives of signals</h2><pre class="codeinput">still_der1 = der1_data(:,1);
+still_music_der1 = der1_data(:,2);
+hand_up_der1 = der1_data(:,3);
+hand_down_der1 = der1_data(:,4);
+walking_der1 = der1_data(:,5);
+running_der1 = der1_data(:,6);
+after_sprint_der1 = der1_data(:,7);
+tapping_fingers_der1 = der1_data(:,8);
+tapping_foot_der1 = der1_data(:,9);
+flexing_der1 = der1_data(:,10);
+</pre><h2 id="7">All second derivatives of signals</h2><pre class="codeinput">still_der2 = der2_data(:,1);
+still_music_der2 = der2_data(:,2);
+hand_up_der2 = der2_data(:,3);
+hand_down_der2 = der2_data(:,4);
+walking_der2 = der2_data(:,5);
+running_der2 = der2_data(:,6);
+after_sprint_der2 = der2_data(:,7);
+tapping_fingers_der2 = der2_data(:,8);
+tapping_foot_der2 = der2_data(:,9);
+flexing_der2 = der2_data(:,10);
+</pre><h2 id="8">Begin Single Waveform Analysis</h2><pre class="codeinput">analysis_signal = tapping_foot_small;
+</pre><h2 id="9">Get Peak/Trough Values and Locations</h2><pre class="codeinput">[sys_peak_vals, sys_peak_locs] = get_systolic_peaks(analysis_signal);
+[notch_pks, notch_locs] = dicrotic_notch_logic(analysis_signal, sys_peak_locs);
+[trough_pks, trough_locs] = trough_finding(analysis_signal);
+</pre><h2 id="10">Plot Metrics</h2><pre class="codeinput">figure();
+suptitle(<span class="string">'Signal Analysis for BVP Waveform'</span>);
+
+subplot(3,1,1);
+hold <span class="string">on</span>;
+plot(analysis_signal);
+<span class="keyword">for</span> i = 1:length(sys_peak_locs)
+    plot(sys_peak_locs(i),sys_peak_vals(i),<span class="string">'r*'</span>);
+    plot(notch_locs(i),analysis_signal(notch_locs(i)),<span class="string">'b*'</span>);
+    plot(trough_locs(i),trough_pks(i),<span class="string">'g*'</span>);
+<span class="keyword">end</span>
+hold <span class="string">off</span>;
+legend(<span class="string">'Signal'</span>, <span class="string">'Systole Peaks'</span>,<span class="string">'Dicrotic Notches'</span>, <span class="string">'Diastole Troughs'</span>);
+title(<span class="string">'Critical Signal Locations'</span>);
+
+subplot(3,1,2);
+plot(diff(analysis_signal));
+title(<span class="string">'First Derivative of Signal'</span>);
+
+subplot(3,1,3);
+plot(diff(diff(analysis_signal)));
+title(<span class="string">'Second Derivative of Signal'</span>);
+
+width=2000;
+height=1000;
+set(gcf,<span class="string">'units'</span>,<span class="string">'points'</span>,<span class="string">'position'</span>,[0,500,width,height]);
+</pre><img vspace="5" hspace="5" src="SignalInflectionFinding_01.png" alt=""> <h2 id="11">User Defined Tool Functions</h2><h2 id="12">Systole Peaks</h2><pre class="codeinput"><span class="keyword">function</span> [peak_vals, peak_locs] = get_systolic_peaks(signal)
+    [peak_vals, peak_locs] = findpeaks(signal,<span class="string">'MinPeakProminence'</span>,15);
+<span class="keyword">end</span>
+</pre><h2 id="13">Diastole Troughs</h2><pre class="codeinput"><span class="keyword">function</span> [trough_pks, trough_locs] = trough_finding(analysis_signal)
+    upside_down = (-1) * analysis_signal;
+    [trough_pks,trough_locs] = findpeaks(upside_down, <span class="string">'MinPeakProminence'</span>, 10);
+    trough_pks = (-1) * trough_pks;
+<span class="keyword">end</span>
+</pre><h2 id="14">Dicrrotic Notches</h2><pre class="codeinput"><span class="keyword">function</span> [notch_pks, notch_locs] = dicrotic_notch_logic(signal, sys_locs)
+    [notch_pks, notch_locs] = notch_algorithm(signal);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [notch_pks, notch_locs] = notch_algorithm(signal)
+    <span class="comment">% Dicrotic Notch Algorithm</span>
+    [sys_peaks,sys_locs] = findpeaks(diff(signal), <span class="string">'MinPeakHeight'</span>, 10); <span class="comment">% Larger threshold</span>
+    [both_peaks,both_locs] = findpeaks(diff(signal), <span class="string">'MinPeakHeight'</span>, -5, <span class="string">'MinPeakDistance'</span>, 10); <span class="comment">% Smaller threshold</span>
+    [C, ia] = setdiff(both_locs, sys_locs, <span class="string">'stable'</span>);
+
+    notch_locs = both_locs(ia);
+    notch_pks = both_peaks(ia);
+<span class="keyword">end</span>
+</pre><h2 id="15">Dataset Import Function</h2><pre class="codeinput"><span class="keyword">function</span> [overall_data, small_data, der1_data, der2_data] = import_csvs()
+    overall_path = strcat(<span class="string">'./Oct25LabSession/'</span>, <span class="string">'Oct25FullSession.csv'</span>);
+    overall_data = csvread(overall_path,2,1);
+
+    small_path = strcat(<span class="string">'./Oct25LabSession/'</span>, <span class="string">'Oct25SmallSegment.csv'</span>);
+    small_data = csvread(small_path,2,1);
+
+    der1_path = strcat(<span class="string">'./Oct25LabSession/'</span>, <span class="string">'Oct25FirstDerivatives.csv'</span>);
+    der1_data = csvread(der1_path,2,1);
+
+    der2_path = strcat(<span class="string">'./Oct25LabSession/'</span>, <span class="string">'Oct25SecondDerivatives.csv'</span>);
+    der2_data = csvread(der2_path,2,1);
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clc;
+clear;
+close all;
+
+%% Import CSVs Created from Python Script
+[overall_data, small_data, der1_data, der2_data] = import_csvs();
+
+%% Converting CSV's to Matlab Variables
+%% Full time of session
+still_full = overall_data(:,1);
+still_music_full = overall_data(:,2);
+hand_up_full = overall_data(:,3);
+hand_down_full = overall_data(:,4);
+walking_full = overall_data(:,5);
+running_full = overall_data(:,6);
+after_sprint_full = overall_data(:,7);
+tapping_fingers_full = overall_data(:,8);
+tapping_foot_full = overall_data(:,9);
+flexing_full = overall_data(:,10);
+
+%% Shortened time section of session
+still_small = small_data(:,1);
+still_music_small = small_data(:,2);
+hand_up_small = small_data(:,3);
+hand_down_small = small_data(:,4);
+walking_small = small_data(:,5);
+running_small = small_data(:,6);
+after_sprint_small = small_data(:,7);
+tapping_fingers_small = small_data(:,8);
+tapping_foot_small = small_data(:,9);
+flexing_small = small_data(:,10);
+
+%% All first derivatives of signals
+still_der1 = der1_data(:,1);
+still_music_der1 = der1_data(:,2);
+hand_up_der1 = der1_data(:,3);
+hand_down_der1 = der1_data(:,4);
+walking_der1 = der1_data(:,5);
+running_der1 = der1_data(:,6);
+after_sprint_der1 = der1_data(:,7);
+tapping_fingers_der1 = der1_data(:,8);
+tapping_foot_der1 = der1_data(:,9);
+flexing_der1 = der1_data(:,10);
+
+%% All second derivatives of signals
+still_der2 = der2_data(:,1);
+still_music_der2 = der2_data(:,2);
+hand_up_der2 = der2_data(:,3);
+hand_down_der2 = der2_data(:,4);
+walking_der2 = der2_data(:,5);
+running_der2 = der2_data(:,6);
+after_sprint_der2 = der2_data(:,7);
+tapping_fingers_der2 = der2_data(:,8);
+tapping_foot_der2 = der2_data(:,9);
+flexing_der2 = der2_data(:,10);
+
+%% Begin Single Waveform Analysis
+analysis_signal = tapping_foot_small;
+
+%% Get Peak/Trough Values and Locations
+[sys_peak_vals, sys_peak_locs] = get_systolic_peaks(analysis_signal);
+[notch_pks, notch_locs] = dicrotic_notch_logic(analysis_signal, sys_peak_locs);
+[trough_pks, trough_locs] = trough_finding(analysis_signal);
+
+%% Plot Metrics
+figure();
+suptitle('Signal Analysis for BVP Waveform');
+
+subplot(3,1,1);
+hold on;
+plot(analysis_signal);
+for i = 1:length(sys_peak_locs)
+    plot(sys_peak_locs(i),sys_peak_vals(i),'r*');
+    plot(notch_locs(i),analysis_signal(notch_locs(i)),'b*');
+    plot(trough_locs(i),trough_pks(i),'g*');
+end
+hold off;
+legend('Signal', 'Systole Peaks','Dicrotic Notches', 'Diastole Troughs');
+title('Critical Signal Locations');
+
+subplot(3,1,2);
+plot(diff(analysis_signal));
+title('First Derivative of Signal');
+
+subplot(3,1,3);
+plot(diff(diff(analysis_signal)));
+title('Second Derivative of Signal');
+
+width=2000;
+height=1000;
+set(gcf,'units','points','position',[0,500,width,height]);
+
+%% User Defined Tool Functions
+%% Systole Peaks
+function [peak_vals, peak_locs] = get_systolic_peaks(signal)
+    [peak_vals, peak_locs] = findpeaks(signal,'MinPeakProminence',15);
+end
+
+%% Diastole Troughs
+function [trough_pks, trough_locs] = trough_finding(analysis_signal)
+    upside_down = (-1) * analysis_signal;  
+    [trough_pks,trough_locs] = findpeaks(upside_down, 'MinPeakProminence', 10);
+    trough_pks = (-1) * trough_pks;
+end
+
+%% Dicrrotic Notches
+function [notch_pks, notch_locs] = dicrotic_notch_logic(signal, sys_locs)
+    [notch_pks, notch_locs] = notch_algorithm(signal);
+end
+
+function [notch_pks, notch_locs] = notch_algorithm(signal)
+    % Dicrotic Notch Algorithm
+    [sys_peaks,sys_locs] = findpeaks(diff(signal), 'MinPeakHeight', 10); % Larger threshold
+    [both_peaks,both_locs] = findpeaks(diff(signal), 'MinPeakHeight', -5, 'MinPeakDistance', 10); % Smaller threshold
+    [C, ia] = setdiff(both_locs, sys_locs, 'stable');
+    
+    notch_locs = both_locs(ia);
+    notch_pks = both_peaks(ia);
+end
+
+%% Dataset Import Function
+function [overall_data, small_data, der1_data, der2_data] = import_csvs()
+    overall_path = strcat('./Oct25LabSession/', 'Oct25FullSession.csv');
+    overall_data = csvread(overall_path,2,1);
+    
+    small_path = strcat('./Oct25LabSession/', 'Oct25SmallSegment.csv');
+    small_data = csvread(small_path,2,1);
+    
+    der1_path = strcat('./Oct25LabSession/', 'Oct25FirstDerivatives.csv');
+    der1_data = csvread(der1_path,2,1);
+    
+    der2_path = strcat('./Oct25LabSession/', 'Oct25SecondDerivatives.csv');
+    der2_data = csvread(der2_path,2,1);
+end
+##### SOURCE END #####
+--></body></html>
